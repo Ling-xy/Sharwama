@@ -1,0 +1,164 @@
+:root { font-family: Arial, "Microsoft YaHei", sans-serif; color: #432612; }
+* { box-sizing: border-box; }
+body { margin: 0; overflow: hidden; background: #102d44; }
+.screen { display: none; width: 100vw; height: 100vh; position: relative; background: url("shawarma-game-stall.png") center / cover no-repeat; }
+.screen.visible { display: block; }
+.title-board, .language-card, .order-card, .hud > div, .quiz-card { background: #ffe6ad; border: 4px solid #6a3217; border-radius: 18px; box-shadow: 0 5px 0 #3e1c0c; }
+.title-board { position: absolute; top: 4vh; left: 50%; transform: translateX(-50%); width: min(820px, 74vw); text-align: center; padding: 18px 28px; background: #7a3b1d; color: #ffd052; }
+.title-board h1 { margin: 0; font-size: clamp(30px, 3.5vw, 52px); line-height: 1.1; letter-spacing: 1px; text-shadow: 3px 3px #3e1c0c; }
+.title-board p { margin: 10px 0 0; color: #fff1c8; font-size: clamp(15px, 1.5vw, 20px); }
+.language-card { position: absolute; left: 6vw; top: 34vh; width: 230px; padding: 16px; text-align: center; }
+.language-card h2 { margin: 0 0 12px; font-size: 20px; }
+.language-card button, .start-button { width: 100%; margin: 6px 0; padding: 11px; border: 3px solid #fff0bd; border-radius: 12px; background: #2e7eb8; color: white; font-size: 18px; font-weight: 700; cursor: pointer; }
+.language-card button.active { outline: 4px solid #ffc936; }
+.start-button { position: absolute; left: 50%; bottom: 16vh; transform: translateX(-50%); width: min(460px, 55vw); padding: 18px; background: #f4a812; font-size: 30px; box-shadow: 0 6px 0 #924111; }
+.hud { position: absolute; top: 2vh; left: 4vw; right: 4vw; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.hud > div { padding: 8px 15px; text-align: center; font-weight: 700; }.hud span { display: block; font-size: 14px; }.hud strong { font-size: 26px; }
+.order-card { position: absolute; top: 13vh; left: 50%; transform: translateX(-50%); width: 410px; padding: 8px 18px; text-align: center; }.order-card h2 { margin: 0; font-size: 16px; }.order-card p { margin: 6px 0 0; font-weight: 700; }
+.instruction { position: absolute; top: 34vh; left: 50%; transform: translateX(-50%); margin: 0; padding: 8px 16px; border-radius: 18px; background: #fff1c9e8; font-weight: 700; }
+.hotspot { position: absolute; border: 0; background: transparent; cursor: pointer; }.grill { left: 16%; top: 19%; width: 20%; height: 52%; }.tray { top: 67%; width: 8%; height: 16%; }.meat { left: 7%; }.lettuce { left: 16%; }.tomato { left: 25%; }.cucumber { left: 34%; }.onion { left: 43%; }.sauce { top: 54%; width: 4%; height: 25%; }.white { left: 55%; }.red { left: 60%; }.flatbread { left: 66%; top: 62%; width: 18%; height: 17%; }.serve { left: 68%; top: 80%; width: 21%; height: 14%; }
+.serve::after {
+  content: attr(data-label);
+  display: grid;
+  place-items: center;
+  width: 92px;
+  height: 42px;
+  margin: auto;
+  border: 3px solid #fff0bf;
+  border-radius: 14px;
+  background: linear-gradient(#d88b36, #88401c);
+  color: #fff6d0;
+  font-size: 18px;
+  font-weight: 700;
+  text-shadow: 0 2px #45200e;
+  box-shadow: 0 3px #4b210d;
+}
+.flatbread::after {
+  content: attr(data-label);
+  display: grid;
+  place-items: center;
+  width: 92px;
+  height: 42px;
+  margin: auto;
+  border: 3px solid #fff0bf;
+  border-radius: 14px;
+  background: linear-gradient(#e3ae4d, #9a5b22);
+  color: #fff6d0;
+  font-size: 18px;
+  font-weight: 700;
+  text-shadow: 0 2px #45200e;
+  box-shadow: 0 3px #4b210d;
+}
+.food-labels button {
+  position: absolute;
+  transform: translateX(-50%);
+  min-width: 54px;
+  padding: 5px 8px;
+  border: 2px solid #6a3217;
+  border-radius: 10px;
+  background: #ffe09b;
+  color: #432612;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.food-labels button:hover {
+  background: #fff3c8;
+}
+#flatbreadToppings { position: absolute; left: 70%; top: 66%; width: 11%; height: 9%; pointer-events: none; }.topping { display: inline-block; width: 20px; height: 12px; margin: 2px; border-radius: 50%; background: #d94b36; border: 2px solid #fff0ca; }.topping.lettuce { background: #64a847; }.topping.cucumber { background: #8fc84d; }.topping.onion { background: #bd82c3; }.topping.meat { background: #9b532e; }.topping.red { background: #c93628; }.topping.white { background: #f5ead1; }
+#toast { position: absolute; bottom: 4vh; left: 50%; transform: translateX(-50%); padding: 9px 15px; border-radius: 15px; background: #4d2615e8; color: #fff1c4; font-weight: 700; opacity: 0; transition: opacity .2s; }.show-toast { opacity: 1 !important; }
+.quiz-screen { background: linear-gradient(#102b3ddd,#102b3ddd), url("shawarma-game-stall.png") center / cover; display: none; place-items: center; }.quiz-screen.visible { display: grid; }.quiz-card { width: min(720px, 88vw); padding: 28px; text-align: center; }.quiz-card h2 { margin-top: 0; }.quiz-card button { display: block; width: 100%; margin: 10px 0; padding: 13px; text-align: left; border: 2px solid #70401f; border-radius: 10px; background: #fff1c7; font-size: 18px; cursor: pointer; }
+
+.end-screen {
+  display: none;
+  place-items: center;
+  background:
+    linear-gradient(rgba(20, 59, 84, 0.45), rgba(20, 59, 84, 0.45)),
+    url("shawarma-game-stall.png") center / cover no-repeat;
+}
+
+.end-screen.visible {
+  display: grid;
+}
+
+.end-card {
+  width: min(760px, 90vw);
+  padding: 28px 34px 32px;
+  text-align: center;
+  background: #ffe6ad;
+  border: 5px solid #6a3217;
+  border-radius: 24px;
+  box-shadow: 0 7px 0 #3e1c0c;
+}
+
+.end-stars {
+  margin: 0;
+  color: #ffc52d;
+  font-size: clamp(28px, 4vw, 46px);
+  letter-spacing: 9px;
+  text-shadow: 2px 3px #6a3217;
+}
+
+.end-card h2 {
+  margin: 8px 0;
+  color: #7a3314;
+  font-size: clamp(28px, 4vw, 44px);
+}
+
+.end-card > p:not(.end-stars) {
+  margin: 0 0 20px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.result-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.result-grid div {
+  min-height: 86px;
+  padding: 12px;
+  background: #fff3cd;
+  border: 2px solid #945025;
+  border-radius: 14px;
+}
+
+.result-grid span,
+.result-grid strong {
+  display: block;
+}
+
+.result-grid span {
+  color: #72401f;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.result-grid strong {
+  margin-top: 8px;
+  color: #57210f;
+  font-size: 24px;
+}
+
+.restart-button {
+  margin-top: 22px;
+  padding: 14px 42px;
+  border: 3px solid #fff0bd;
+  border-radius: 14px;
+  background: linear-gradient(#f7bd33, #d57b17);
+  color: #fffdf2;
+  box-shadow: 0 4px 0 #7a3314;
+  cursor: pointer;
+  font-size: 21px;
+  font-weight: 800;
+  text-shadow: 0 2px #6a3217;
+}
+
+@media (max-width: 680px) {
+  .result-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
