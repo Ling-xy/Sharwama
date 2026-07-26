@@ -57,6 +57,16 @@ class SFXManager {
     this.lastPlayed = new Map();
     this.wasPaused = false;
     this.outputBoost = 2.25;
+    this.uploadedSFX = {
+      grillLoop: { src: "assets/audio/sfx/grill-loop.mp3", relativeVolume: 0.35, loop: true, cooldown: 500 },
+      addVegetable: { src: "assets/audio/sfx/add-vegetable.mp3", relativeVolume: 0.60, cooldown: 110 },
+      wrapShawarma: { src: "assets/audio/sfx/wrap-shawarma.mp3", relativeVolume: 0.65, cooldown: 1100 },
+      addSauce: { src: "assets/audio/sfx/add-sauce.mp3", relativeVolume: 0.60, cooldown: 280 },
+      orderPayment: { src: "assets/audio/sfx/order-payment.mp3", relativeVolume: 0.70, cooldown: 600 },
+      quizWrong: { src: "assets/audio/sfx/quiz-wrong.mp3", relativeVolume: 0.55, cooldown: 200 }
+    };
+    this.uploadedAudio = new Map();
+    this.uploadedLoops = new Set();
   }
 
   initSFX() {
@@ -69,6 +79,69 @@ class SFXManager {
     return true;
   }
 
+  getUploadedAudio(name) {
+    const definition = this.uploadedSFX[name];
+    if (!definition || this.uploadedAudio.has(name) || typeof Audio === "undefined") return this.uploadedAudio.get(name);
+    const audio = new Audio(definition.src);
+    audio.preload = "auto";
+    audio.loop = Boolean(definition.loop);
+    audio.addEventListener("error", () => {
+      /* Missing uploaded audio is non-fatal: the game remains playable. */
+    });
+    this.uploadedAudio.set(name, audio);
+    return audio;
+  }
+
+  refreshUploadedVolumes() {
+    this.uploadedAudio.forEach((audio, name) => {
+      const definition = this.uploadedSFX[name];
+      if (definition) audio.volume = Math.max(0, Math.min(1, this.volume * definition.relativeVolume));
+    });
+  }
+
+  playUploadedSFX(name) {
+    const definition = this.uploadedSFX[name];
+    if (!definition || !this.enabled || !this.canPlay(`uploaded:${name}`, definition.cooldown)) return;
+    const audio = this.getUploadedAudio(name);
+    if (!audio) return;
+    audio.volume = Math.max(0, Math.min(1, this.volume * definition.relativeVolume));
+    if (!definition.loop) {
+      try { audio.currentTime = 0; } catch (_) { /* Media may not be seekable yet. */ }
+    }
+    audio.play().catch(() => {
+      /* Autoplay or a missing codec must never interrupt game controls. */
+    });
+  }
+
+  playUploadedLoop(name) {
+    if (this.uploadedLoops.has(name) || !this.enabled) return;
+    const definition = this.uploadedSFX[name];
+    if (!definition) return;
+    const audio = this.getUploadedAudio(name);
+    if (!audio) return;
+    audio.loop = true;
+    audio.volume = Math.max(0, Math.min(1, this.volume * definition.relativeVolume));
+    this.uploadedLoops.add(name);
+    audio.play().catch(() => this.uploadedLoops.delete(name));
+  }
+
+  stopUploadedLoop(name) {
+    const audio = this.uploadedAudio.get(name);
+    if (audio) {
+      audio.pause();
+      try { audio.currentTime = 0; } catch (_) { /* Ignore unsupported seeks. */ }
+    }
+    this.uploadedLoops.delete(name);
+  }
+
+  stopAllUploadedSFX() {
+    this.uploadedAudio.forEach(audio => {
+      audio.pause();
+      try { audio.currentTime = 0; } catch (_) { /* Ignore unsupported seeks. */ }
+    });
+    this.uploadedLoops.clear();
+  }
+
   isReadyForSFX(retry) {
     if (!this.initSFX()) return false;
     if (this.context.state === "running") return true;
@@ -79,12 +152,16 @@ class SFXManager {
   setSFXVolume(value) {
     this.volume = Math.max(0, Math.min(1, Number(value)));
     localStorage.setItem("shawarma-sfx-volume", String(this.volume));
+    this.refreshUploadedVolumes();
   }
 
   toggleSFX(enabled) {
     this.enabled = typeof enabled === "boolean" ? enabled : !this.enabled;
     localStorage.setItem("shawarma-sfx-enabled", String(this.enabled));
-    if (!this.enabled) this.stopAllLoopSFX();
+    if (!this.enabled) {
+      this.stopAllLoopSFX();
+      this.stopAllUploadedSFX();
+    }
     return this.enabled;
   }
 
@@ -182,6 +259,10 @@ class SFXManager {
   }
 
   playLoopSFX(name) {
+    if (name === "grillLoop") {
+      this.playUploadedLoop(name);
+      return;
+    }
     if (!this.enabled || this.loops.has(name)) return;
     if (!this.isReadyForSFX(() => this.playLoopSFX(name))) return;
     const playTick = () => {
@@ -196,6 +277,7 @@ class SFXManager {
   }
 
   stopLoopSFX(name) {
+    if (name === "grillLoop") this.stopUploadedLoop(name);
     const loop = this.loops.get(name);
     if (loop) window.clearInterval(loop);
     this.loops.delete(name);
@@ -203,10 +285,11 @@ class SFXManager {
 
   stopAllLoopSFX() {
     [...this.loops.keys()].forEach(name => this.stopLoopSFX(name));
+    [...this.uploadedLoops].forEach(name => this.stopUploadedLoop(name));
   }
 
   pauseSFX() {
-    this.wasPaused = this.loops.size > 0;
+    this.wasPaused = this.loops.size > 0 || this.uploadedLoops.size > 0;
     this.stopAllLoopSFX();
   }
 
@@ -321,10 +404,13 @@ function chooseFood(food) {
 
   selected.push(food);
   score += 5;
-  const soundName = {
-    meat: "addMeat", lettuce: "addLettuce", tomato: "addTomato", cucumber: "addCucumber", onion: "addOnion", red: "sauceRed", white: "sauceWhite"
-  }[food];
-  sfxManager.playSFX(soundName);
+  if (["lettuce", "tomato", "cucumber", "onion"].includes(food)) {
+    sfxManager.playUploadedSFX("addVegetable");
+  } else if (["red", "white"].includes(food)) {
+    sfxManager.playUploadedSFX("addSauce");
+  } else {
+    sfxManager.playSFX("addMeat");
+  }
   const topping = document.createElement("i");
   topping.className = `topping ${food}`;
   flatbreadToppings.append(topping);
@@ -371,9 +457,7 @@ flatbreadButton.onclick = () => {
   }
   phase = "wrapping";
   flatbreadButton.classList.add("wrapping");
-  sfxManager.playSFX("wrapFold1");
-  window.setTimeout(() => sfxManager.playSFX("wrapFold2"), 280);
-  window.setTimeout(() => sfxManager.playSFX("wrapComplete"), 630);
+  sfxManager.playUploadedSFX("wrapShawarma");
   window.setTimeout(() => {
     if (phase !== "wrapping") return;
     phase = "serve";
@@ -389,6 +473,7 @@ serveButton.onclick = () => {
   }
   sfxManager.playSFX("buttonConfirm");
   sfxManager.playSFX("orderSuccess");
+  sfxManager.playUploadedSFX("orderPayment");
   sfxManager.later(85, () => sfxManager.playSFX("coin"));
   sfxManager.later(175, () => sfxManager.playSFX("customerBell"));
   score += 50;
@@ -439,7 +524,7 @@ function finishQuiz(isCorrect) {
     sfxManager.later(80, () => sfxManager.playSFX("royalStamp"));
     sfxManager.later(165, () => sfxManager.playSFX("coin"));
   } else {
-    sfxManager.playSFX("quizWrong");
+    sfxManager.playUploadedSFX("quizWrong");
   }
 
   quizFeedback.textContent = isCorrect
@@ -640,4 +725,3 @@ document.addEventListener("visibilitychange", () => {
 });
 
 refreshSFXSettings();
-
