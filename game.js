@@ -41,6 +41,7 @@ class SFXManager {
     this.loops = new Map();
     this.lastPlayed = new Map();
     this.wasPaused = false;
+    this.outputBoost = 2.25;
   }
 
   initSFX() {
@@ -82,7 +83,7 @@ class SFXManager {
     oscillator.frequency.setValueAtTime(frequency, time);
     if (slide) oscillator.frequency.exponentialRampToValueAtTime(Math.max(30, frequency + slide), time + duration);
     volume.gain.setValueAtTime(0.0001, time);
-    volume.gain.exponentialRampToValueAtTime(Math.max(0.0001, gain * this.volume), time + 0.012);
+    volume.gain.exponentialRampToValueAtTime(Math.max(0.0001, gain * this.volume * this.outputBoost), time + 0.012);
     volume.gain.exponentialRampToValueAtTime(0.0001, time + duration);
     oscillator.connect(volume).connect(ctx.destination);
     oscillator.start(time);
@@ -101,7 +102,7 @@ class SFXManager {
     const time = ctx.currentTime;
     filter.type = "lowpass";
     filter.frequency.value = filterFrequency;
-    volume.gain.setValueAtTime(gain * this.volume, time);
+    volume.gain.setValueAtTime(gain * this.volume * this.outputBoost, time);
     volume.gain.exponentialRampToValueAtTime(0.0001, time + duration);
     source.buffer = buffer;
     source.connect(filter).connect(volume).connect(ctx.destination);
@@ -237,8 +238,9 @@ function createFoodLabels() {
     tomato: [34, 84],
     cucumber: [45, 84],
     onion: [56, 84],
-    white: [55.5, 61],
-    red: [62.5, 61]
+    /* Sauce labels are deliberately staggered so BM + 中文 never overlap. */
+    white: [51, 53],
+    red: [64, 47]
   };
 
   layer.innerHTML = "";
@@ -248,6 +250,7 @@ function createFoodLabels() {
     const [left, top] = positions[food];
 
     button.textContent = label(food);
+    button.classList.add("food-label", `food-${food}`);
     button.style.left = `${left}vw`;
     button.style.top = `${top}vh`;
     button.onclick = () => chooseFood(food);
