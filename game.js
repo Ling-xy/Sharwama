@@ -27,6 +27,170 @@ function playBackgroundMusic() {
   });
 }
 
+/* Original, synthesized game effects. They use Web Audio and never replace the music track. */
+class SFXManager {
+  constructor() {
+    const savedEnabled = localStorage.getItem("shawarma-sfx-enabled");
+    const savedVolume = Number(localStorage.getItem("shawarma-sfx-volume"));
+
+    this.enabled = savedEnabled === null ? true : savedEnabled === "true";
+    this.volume = Number.isFinite(savedVolume) && savedVolume >= 0 ? Math.min(savedVolume, 1) : 0.65;
+    this.context = null;
+    this.loops = new Map();
+    this.lastPlayed = new Map();
+    this.wasPaused = false;
+  }
+
+  initSFX() {
+    if (!this.context) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return false;
+      this.context = new AudioContext();
+    }
+    if (this.context.state === "suspended") this.context.resume().catch(() => {});
+    return true;
+  }
+
+  setSFXVolume(value) {
+    this.volume = Math.max(0, Math.min(1, Number(value)));
+    localStorage.setItem("shawarma-sfx-volume", String(this.volume));
+  }
+
+  toggleSFX(enabled) {
+    this.enabled = typeof enabled === "boolean" ? enabled : !this.enabled;
+    localStorage.setItem("shawarma-sfx-enabled", String(this.enabled));
+    if (!this.enabled) this.stopAllLoopSFX();
+    return this.enabled;
+  }
+
+  canPlay(name, cooldown = 75) {
+    const now = performance.now();
+    if ((this.lastPlayed.get(name) || 0) + cooldown > now) return false;
+    this.lastPlayed.set(name, now);
+    return true;
+  }
+
+  tone(frequency, duration, gain = 0.08, type = "sine", slide = 0) {
+    if (!this.context || !this.enabled) return;
+    const ctx = this.context;
+    const oscillator = ctx.createOscillator();
+    const volume = ctx.createGain();
+    const time = ctx.currentTime;
+    oscillator.type = type;
+    oscillator.frequency.setValueAtTime(frequency, time);
+    if (slide) oscillator.frequency.exponentialRampToValueAtTime(Math.max(30, frequency + slide), time + duration);
+    volume.gain.setValueAtTime(0.0001, time);
+    volume.gain.exponentialRampToValueAtTime(Math.max(0.0001, gain * this.volume), time + 0.012);
+    volume.gain.exponentialRampToValueAtTime(0.0001, time + duration);
+    oscillator.connect(volume).connect(ctx.destination);
+    oscillator.start(time);
+    oscillator.stop(time + duration + 0.02);
+  }
+
+  noise(duration, gain = 0.035, filterFrequency = 1300) {
+    if (!this.context || !this.enabled) return;
+    const ctx = this.context;
+    const buffer = ctx.createBuffer(1, Math.max(1, Math.floor(ctx.sampleRate * duration)), ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let index = 0; index < data.length; index += 1) data[index] = Math.random() * 2 - 1;
+    const source = ctx.createBufferSource();
+    const filter = ctx.createBiquadFilter();
+    const volume = ctx.createGain();
+    const time = ctx.currentTime;
+    filter.type = "lowpass";
+    filter.frequency.value = filterFrequency;
+    volume.gain.setValueAtTime(gain * this.volume, time);
+    volume.gain.exponentialRampToValueAtTime(0.0001, time + duration);
+    source.buffer = buffer;
+    source.connect(filter).connect(volume).connect(ctx.destination);
+    source.start(time);
+  }
+
+  later(delay, callback) {
+    window.setTimeout(() => {
+      if (this.enabled) callback();
+    }, delay);
+  }
+
+  playSFX(name) {
+    if (!this.enabled || !this.initSFX() || !this.canPlay(name)) return;
+    const cutPitch = 230 + Math.random() * 45;
+    const simpleClick = () => { this.tone(240, 0.065, 0.055, "triangle", -25); this.later(28, () => this.tone(650, 0.055, 0.03, "sine")); };
+    const bright = () => { this.tone(470, 0.07, 0.07, "triangle", 110); this.later(65, () => this.tone(690, 0.11, 0.06, "sine", 120)); };
+    const softWrong = () => this.tone(165, 0.12, 0.055, "sine", -30);
+
+    switch (name) {
+      case "buttonClick": simpleClick(); break;
+      case "buttonConfirm": bright(); break;
+      case "buttonDisabled": this.tone(125, 0.08, 0.035, "triangle", -10); break;
+      case "customerBell": this.tone(720, 0.08, 0.045, "sine", 120); this.later(90, () => this.tone(920, 0.12, 0.04, "sine")); break;
+      case "newOrder": this.tone(520, 0.07, 0.045, "triangle", 80); this.later(75, () => this.tone(680, 0.11, 0.05, "sine")); break;
+      case "grillIgnite": this.noise(0.16, 0.055, 720); this.tone(105, 0.16, 0.035, "sawtooth", 70); break;
+      case "grillPerfect": bright(); break;
+      case "grillRaw": softWrong(); break;
+      case "grillBurnt": this.noise(0.1, 0.035, 420); this.tone(105, 0.09, 0.035, "sine", -45); break;
+      case "knifeCut": this.noise(0.045, 0.045, 880); this.tone(cutPitch, 0.045, 0.035, "triangle", -20); break;
+      case "cutComplete": this.tone(620, 0.07, 0.05, "sine", 80); this.later(65, () => this.tone(820, 0.12, 0.05, "sine")); break;
+      case "addLettuce": this.noise(0.06, 0.032, 1800); this.tone(520, 0.045, 0.02, "triangle"); break;
+      case "addTomato": this.tone(215, 0.08, 0.05, "sine", 45); break;
+      case "addCucumber": this.tone(690, 0.055, 0.045, "triangle", -40); break;
+      case "addOnion": this.tone(430, 0.055, 0.035, "sine", 60); break;
+      case "addMeat": this.noise(0.05, 0.035, 700); this.tone(175, 0.06, 0.045, "triangle"); break;
+      case "sauceRed": this.noise(0.18, 0.025, 500); this.tone(180, 0.18, 0.035, "sine", -20); break;
+      case "sauceWhite": this.noise(0.18, 0.025, 800); this.tone(285, 0.18, 0.035, "sine", 20); break;
+      case "wrapFold1": this.noise(0.13, 0.025, 1000); this.tone(250, 0.1, 0.025, "triangle", -25); break;
+      case "wrapFold2": this.noise(0.15, 0.03, 750); this.tone(190, 0.1, 0.03, "triangle", -15); break;
+      case "wrapComplete": this.tone(460, 0.1, 0.05, "triangle", 90); this.later(90, () => this.tone(730, 0.13, 0.05, "sine")); break;
+      case "orderSuccess": bright(); break;
+      case "orderWrong": softWrong(); break;
+      case "perfectOrder": this.tone(360, 0.07, 0.045, "triangle", 80); this.later(85, () => this.tone(620, 0.09, 0.055, "sine")); this.later(180, () => this.tone(820, 0.14, 0.05, "sine")); break;
+      case "quizCorrect": bright(); break;
+      case "quizWrong": softWrong(); break;
+      case "coin": this.tone(880, 0.065, 0.05, "sine", 90); break;
+      case "combo": this.tone(500, 0.06, 0.04, "triangle", 80); this.later(60, () => this.tone(700, 0.08, 0.05, "triangle", 120)); break;
+      case "characterUnlock": this.tone(430, 0.08, 0.045, "triangle", 100); this.later(90, () => this.tone(700, 0.16, 0.06, "sine", 130)); break;
+      case "royalStamp": this.noise(0.07, 0.045, 560); this.tone(210, 0.1, 0.05, "triangle"); break;
+      case "levelComplete": bright(); this.later(150, () => this.tone(880, 0.15, 0.055, "sine")); break;
+      default: simpleClick();
+    }
+  }
+
+  playLoopSFX(name) {
+    if (!this.enabled || this.loops.has(name) || !this.initSFX()) return;
+    const playTick = () => {
+      if (!this.enabled || !this.loops.has(name)) return;
+      if (name === "grillLoop") {
+        this.noise(0.12, 0.018, 900);
+        this.tone(92, 0.12, 0.012, "sine", 8);
+      }
+    };
+    playTick();
+    this.loops.set(name, window.setInterval(playTick, 380));
+  }
+
+  stopLoopSFX(name) {
+    const loop = this.loops.get(name);
+    if (loop) window.clearInterval(loop);
+    this.loops.delete(name);
+  }
+
+  stopAllLoopSFX() {
+    [...this.loops.keys()].forEach(name => this.stopLoopSFX(name));
+  }
+
+  pauseSFX() {
+    this.wasPaused = this.loops.size > 0;
+    this.stopAllLoopSFX();
+  }
+
+  resumeSFX() {
+    if (this.wasPaused && phase === "grill") this.playLoopSFX("grillLoop");
+    this.wasPaused = false;
+  }
+}
+
+const sfxManager = new SFXManager();
+
 const orderPatterns = [
   ["meat", "lettuce", "tomato", "white"],
   ["meat", "onion", "cucumber", "red"],
@@ -90,6 +254,9 @@ function createFoodLabels() {
   });
 }
 function startGame() {
+  sfxManager.initSFX();
+  sfxManager.stopAllLoopSFX();
+  sfxManager.playSFX("buttonConfirm");
   playBackgroundMusic();
   score = 0;
   coins = 0;
@@ -107,10 +274,41 @@ function startGame() {
   instruction.textContent = languageText[language].grill;
   ui();
   createFoodLabels();
+  sfxManager.playSFX("customerBell");
+  sfxManager.later(120, () => sfxManager.playSFX("newOrder"));
 }
-function chooseFood(food) { if (phase !== "ingredients") { toast(language === "zh" ? "请先完成烤制。" : "Selesaikan masakan dahulu."); return; } if (!currentOrder.includes(food) || selected.includes(food)) { toast(language === "zh" ? "这个食材不在订单中。" : "Bahan ini tiada dalam pesanan."); return; } selected.push(food); score += 5; const topping = document.createElement("i"); topping.className = `topping ${food}`; flatbreadToppings.append(topping); ui(); toast(`${label(food)} ✓`); if (selected.length === currentOrder.length) { phase = "wrap"; instruction.textContent = languageText[language].wrap; } }
+function chooseFood(food) {
+  if (phase !== "ingredients") {
+    sfxManager.playSFX("buttonDisabled");
+    toast(language === "zh" ? "请先完成烤制。" : "Selesaikan masakan dahulu.");
+    return;
+  }
+  if (!currentOrder.includes(food) || selected.includes(food)) {
+    sfxManager.playSFX("orderWrong");
+    toast(language === "zh" ? "这个食材不在订单中。" : "Bahan ini tiada dalam pesanan.");
+    return;
+  }
+
+  selected.push(food);
+  score += 5;
+  const soundName = {
+    meat: "addMeat", lettuce: "addLettuce", tomato: "addTomato", cucumber: "addCucumber", onion: "addOnion", red: "sauceRed", white: "sauceWhite"
+  }[food];
+  sfxManager.playSFX(soundName);
+  const topping = document.createElement("i");
+  topping.className = `topping ${food}`;
+  flatbreadToppings.append(topping);
+  ui();
+  toast(`${label(food)} ✓`);
+  if (selected.length === currentOrder.length) {
+    phase = "wrap";
+    instruction.textContent = languageText[language].wrap;
+    sfxManager.playSFX("combo");
+  }
+}
 document.querySelectorAll("[data-language]").forEach(button => {
   button.onclick = () => {
+    sfxManager.playSFX("buttonClick");
     language = button.dataset.language;
     document.querySelectorAll("[data-language]").forEach(item => {
       item.classList.toggle("active", item === button);
@@ -121,9 +319,55 @@ document.querySelectorAll("[data-language]").forEach(button => {
 });
 startButton.onclick = startGame;
 restartButton.onclick = startGame;
-grillButton.onclick = () => { if (phase !== "grill") return; phase = "ingredients"; instruction.textContent = language === "zh" ? "烤肉完成。点击订单中的食材。" : language === "bm" ? "Daging siap. Pilih bahan dalam pesanan." : "Daging siap｜烤肉完成。点击订单食材。"; toast(language === "zh" ? "烤肉完成！" : "Daging siap!"); };
-flatbreadButton.onclick = () => { if (phase !== "wrap") return toast(language === "zh" ? "请先完成所有食材。" : "Pilih semua bahan dahulu."); phase = "serve"; instruction.textContent = languageText[language].serve; toast(language === "zh" ? "包裹完成！" : "Shawarma dibalut!"); };
-serveButton.onclick = () => { if (phase !== "serve") return toast(language === "zh" ? "请先包裹沙威玛。" : "Balut shawarma dahulu."); score += 50; coins += 5; phase = "complete"; ui(); toast(language === "zh" ? "订单完成！" : "Pesanan siap!"); setTimeout(showQuiz, 700); };
+grillButton.onclick = () => {
+  if (phase !== "grill") return sfxManager.playSFX("buttonDisabled");
+  sfxManager.playSFX("grillIgnite");
+  sfxManager.playLoopSFX("grillLoop");
+  phase = "grill-cooking";
+  instruction.textContent = language === "zh" ? "烤肉进行中……" : language === "bm" ? "Daging sedang dimasak…" : "Daging sedang dimasak…｜烤肉进行中……";
+  window.setTimeout(() => {
+    if (phase !== "grill-cooking") return;
+    sfxManager.stopLoopSFX("grillLoop");
+    sfxManager.playSFX("grillPerfect");
+    phase = "ingredients";
+    instruction.textContent = language === "zh" ? "烤肉完成。点击订单中的食材。" : language === "bm" ? "Daging siap. Pilih bahan dalam pesanan." : "Daging siap｜烤肉完成。点击订单食材。";
+    toast(language === "zh" ? "烤肉完成！" : "Daging siap!");
+  }, 520);
+};
+flatbreadButton.onclick = () => {
+  if (phase !== "wrap") {
+    sfxManager.playSFX("buttonDisabled");
+    return toast(language === "zh" ? "请先完成所有食材。" : "Pilih semua bahan dahulu.");
+  }
+  phase = "wrapping";
+  flatbreadButton.classList.add("wrapping");
+  sfxManager.playSFX("wrapFold1");
+  window.setTimeout(() => sfxManager.playSFX("wrapFold2"), 280);
+  window.setTimeout(() => sfxManager.playSFX("wrapComplete"), 630);
+  window.setTimeout(() => {
+    if (phase !== "wrapping") return;
+    phase = "serve";
+    flatbreadButton.classList.remove("wrapping");
+    instruction.textContent = languageText[language].serve;
+    toast(language === "zh" ? "沙威玛完成！" : language === "bm" ? "Shawarma Siap!" : "Shawarma Siap!｜沙威玛完成！");
+  }, 900);
+};
+serveButton.onclick = () => {
+  if (phase !== "serve") {
+    sfxManager.playSFX("buttonDisabled");
+    return toast(language === "zh" ? "请先包裹沙威玛。" : "Balut shawarma dahulu.");
+  }
+  sfxManager.playSFX("buttonConfirm");
+  sfxManager.playSFX("orderSuccess");
+  sfxManager.later(85, () => sfxManager.playSFX("coin"));
+  sfxManager.later(175, () => sfxManager.playSFX("customerBell"));
+  score += 50;
+  coins += 5;
+  phase = "complete";
+  ui();
+  toast(language === "zh" ? "订单完成！" : "Pesanan siap!");
+  setTimeout(showQuiz, 700);
+};
 const quizBank = [
   { bm: "Kami merupakan individu yang dihormati dan disanjungi oleh masyarakat kerana memberikan sumbangan besar kepada Melaka. Siapakah kami?", zh: "我们因为对马六甲作出重大贡献，而受到社会的尊敬与爱戴。我们被称为什么？", options: [["Pedagang Asing", "外国商人"], ["Tokoh Terbilang", "杰出人物"], ["Pelawat Istana", "王宫访客"], ["Rakyat Biasa", "普通百姓"]], correct: 1 },
   { bm: "Aku berada pada kedudukan paling tinggi dalam struktur masyarakat Kesultanan Melayu Melaka. Siapakah aku?", zh: "我位于马六甲苏丹王朝社会结构的最高位置。我是谁？", options: [["Sultan", "苏丹"], ["Pembesar", "大臣"], ["Rakyat", "人民"], ["Hamba", "奴仆"]], correct: 0 },
@@ -157,6 +401,11 @@ function finishQuiz(isCorrect) {
   if (isCorrect) {
     correctQuestions += 1;
     score += 100;
+    sfxManager.playSFX("quizCorrect");
+    sfxManager.later(80, () => sfxManager.playSFX("royalStamp"));
+    sfxManager.later(165, () => sfxManager.playSFX("coin"));
+  } else {
+    sfxManager.playSFX("quizWrong");
   }
 
   quizFeedback.textContent = isCorrect
@@ -191,10 +440,13 @@ function finishQuiz(isCorrect) {
     instruction.textContent = languageText[language].grill;
     ui();
     createFoodLabels();
+    sfxManager.playSFX("newOrder");
   }, 1200);
 }
 
 function showEndScreen() {
+  sfxManager.stopAllLoopSFX();
+  sfxManager.playSFX("levelComplete");
   const wrongQuestions = answeredQuestions - correctQuestions;
   const accuracy = Math.round((correctQuestions / quizBank.length) * 100);
   const isChinese = language === "zh";
@@ -229,6 +481,7 @@ ui();
 
 /* Draw one unused question per completed order. */
 function showQuiz() {
+  sfxManager.stopAllLoopSFX();
   if (unusedQuestions.length === 0) {
     unusedQuestions = quizBank.map((_, index) => index).sort(() => Math.random() - 0.5);
   }
@@ -261,9 +514,62 @@ function showQuiz() {
   [correct, ...wrong].sort(() => Math.random() - 0.5).forEach(answer => {
     const button = document.createElement("button");
     button.textContent = answer;
-    button.onclick = () => finishQuiz(answer === correct);
+    button.onclick = () => {
+      sfxManager.playSFX("buttonClick");
+      finishQuiz(answer === correct);
+    };
     answers.append(button);
   });
 
   phase = "quiz";
 }
+
+const settingsScreen = document.querySelector("#settingsScreen");
+const settingsButton = document.querySelector("#settingsButton");
+const gameSettingsButton = document.querySelector("#gameSettingsButton");
+const closeSettingsButton = document.querySelector("#closeSettingsButton");
+const sfxToggle = document.querySelector("#sfxToggle");
+const sfxVolume = document.querySelector("#sfxVolume");
+const sfxValue = document.querySelector("#sfxValue");
+
+function refreshSFXSettings() {
+  sfxToggle.checked = sfxManager.enabled;
+  sfxVolume.value = Math.round(sfxManager.volume * 100);
+  sfxValue.textContent = `${sfxVolume.value}%`;
+}
+
+function openSFXSettings() {
+  sfxManager.playSFX("buttonClick");
+  refreshSFXSettings();
+  settingsScreen.classList.add("visible");
+  settingsScreen.setAttribute("aria-hidden", "false");
+}
+
+function closeSFXSettings() {
+  sfxManager.playSFX("buttonClick");
+  settingsScreen.classList.remove("visible");
+  settingsScreen.setAttribute("aria-hidden", "true");
+}
+
+settingsButton.onclick = openSFXSettings;
+gameSettingsButton.onclick = openSFXSettings;
+closeSettingsButton.onclick = closeSFXSettings;
+sfxToggle.onchange = () => {
+  sfxManager.toggleSFX(sfxToggle.checked);
+  if (sfxToggle.checked) sfxManager.playSFX("buttonConfirm");
+};
+sfxVolume.oninput = () => {
+  sfxManager.setSFXVolume(Number(sfxVolume.value) / 100);
+  sfxValue.textContent = `${sfxVolume.value}%`;
+};
+settingsScreen.onclick = event => {
+  if (event.target === settingsScreen) closeSFXSettings();
+};
+
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) sfxManager.pauseSFX();
+  else sfxManager.resumeSFX();
+});
+
+refreshSFXSettings();
+
