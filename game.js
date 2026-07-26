@@ -294,7 +294,7 @@ class SFXManager {
   }
 
   resumeSFX() {
-    if (this.wasPaused && phase === "grill") this.playLoopSFX("grillLoop");
+    if (this.wasPaused && ["grill", "grill-cooking"].includes(phase)) this.playLoopSFX("grillLoop");
     this.wasPaused = false;
   }
 }

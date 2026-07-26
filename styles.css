@@ -237,6 +237,30 @@ body { margin: 0; overflow: hidden; background: #102d44; }
 .test-sfx-button { left: 10% !important; top: 70% !important; width: 80% !important; height: 10% !important; }
 .settings-actions { left: 10% !important; top: 84% !important; width: 80% !important; height: 9% !important; }
 
+/* The supplied artwork provides the rail; the real range inputs provide a movable handle. */
+.settings-row input[type="range"] {
+  z-index: 5;
+  display: block;
+  opacity: 1;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  pointer-events: auto;
+}
+.settings-row input[type="range"]::-webkit-slider-runnable-track { height: 18px; border-radius: 999px; background: transparent; }
+.settings-row input[type="range"]::-moz-range-track { height: 18px; border: 0; border-radius: 999px; background: transparent; }
+.settings-row input[type="range"]::-webkit-slider-thumb {
+  width: 32px; height: 32px; margin-top: -7px; border: 3px solid #754016; border-radius: 50%; appearance: none; -webkit-appearance: none;
+  background: radial-gradient(circle, #ffe8a4 0 19%, #e49a22 21% 53%, #8d4817 55% 100%);
+  box-shadow: 0 2px 0 #56280e, inset 0 0 0 2px #ffdc69; cursor: grab;
+}
+.settings-row input[type="range"]:active::-webkit-slider-thumb { cursor: grabbing; transform: scale(1.08); }
+.settings-row input[type="range"]::-moz-range-thumb {
+  width: 28px; height: 28px; border: 3px solid #754016; border-radius: 50%;
+  background: radial-gradient(circle, #ffe8a4 0 19%, #e49a22 21% 53%, #8d4817 55% 100%);
+  box-shadow: 0 2px 0 #56280e, inset 0 0 0 2px #ffdc69; cursor: grab;
+}
+
 .wrapping { pointer-events: none; }
 .wrapping::after { filter: brightness(1.14); transform: scale(.96); }
 
