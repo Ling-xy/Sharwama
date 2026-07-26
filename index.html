@@ -104,14 +104,30 @@
     <section id="settingsScreen" class="settings-screen" aria-hidden="true">
       <article class="settings-card" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
         <button id="closeSettingsButton" class="settings-close" type="button" aria-label="Close sound settings">×</button>
-        <h2 id="settingsTitle">Kesan Bunyi｜音效设置</h2>
-        <label class="sound-slider"><span>Muzik Latar｜背景音乐</span><input id="musicVolume" type="range" min="0" max="35" value="12"><output id="musicValue">12%</output></label>
-        <label class="sound-row"><span>Kesan Bunyi｜音效</span><input id="sfxToggle" type="checkbox" checked></label>
-        <label class="sound-slider"><span>Kelantangan Kesan Bunyi｜音效音量</span><input id="sfxVolume" type="range" min="0" max="100" value="65"><output id="sfxValue">65%</output></label>
-        <button id="testSfxButton" class="test-sfx-button" type="button">Dengar Kesan Bunyi｜试听音效</button>
+        <header class="settings-wood-header">
+          <span class="header-speaker" aria-hidden="true">◖))</span>
+          <h2 id="settingsTitle">Kesan Bunyi｜音效设置</h2>
+        </header>
+        <div class="settings-content">
+          <label class="sound-slider settings-row">
+            <span class="setting-icon music-icon" aria-hidden="true">♪</span>
+            <span class="setting-name">Muzik Latar｜背景音乐</span>
+            <input id="musicVolume" type="range" min="0" max="35" value="12"><output id="musicValue">12%</output>
+          </label>
+          <label class="sound-row settings-row">
+            <span class="setting-icon sfx-icon" aria-hidden="true">◖))</span>
+            <span class="setting-name">Kesan Bunyi｜音效</span><input id="sfxToggle" type="checkbox" checked>
+          </label>
+          <label class="sound-slider settings-row">
+            <span class="setting-icon level-icon" aria-hidden="true">▮▮▮</span>
+            <span class="setting-name">Kelantangan Kesan Bunyi｜音效音量</span>
+            <input id="sfxVolume" type="range" min="0" max="100" value="65"><output id="sfxValue">65%</output>
+          </label>
+          <button id="testSfxButton" class="test-sfx-button" type="button"><span aria-hidden="true">◖))</span> Dengar Kesan Bunyi｜试听音效</button>
+        </div>
         <div class="settings-actions">
-          <button id="continueButton" class="settings-continue" type="button">Sambung｜继续</button>
-          <button id="homeButton" class="settings-home" type="button">Utama｜回到主页</button>
+          <button id="continueButton" class="settings-continue" type="button"><span aria-hidden="true">▶</span> Sambung｜继续</button>
+          <button id="homeButton" class="settings-home" type="button"><span aria-hidden="true">⌂</span> Utama｜回到主页</button>
         </div>
       </article>
     </section>
