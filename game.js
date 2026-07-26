@@ -15,13 +15,28 @@ let coins = 0;
 let orderNumber = 1;
 let answeredQuestions = 0;
 let correctQuestions = 0;
+let musicVolume = Number(localStorage.getItem("shawarma-music-volume"));
+
+if (!Number.isFinite(musicVolume) || musicVolume < 0) musicVolume = 0.12;
+musicVolume = Math.min(musicVolume, 0.35);
+
+function getBackgroundMusic() {
+  return document.querySelector("#backgroundMusic");
+}
+
+function setMusicVolume(value) {
+  musicVolume = Math.max(0, Math.min(0.35, Number(value)));
+  localStorage.setItem("shawarma-music-volume", String(musicVolume));
+  const backgroundMusic = getBackgroundMusic();
+  if (backgroundMusic) backgroundMusic.volume = musicVolume;
+}
 
 function playBackgroundMusic() {
-  const backgroundMusic = document.querySelector("#backgroundMusic");
+  const backgroundMusic = getBackgroundMusic();
 
   if (!backgroundMusic || !backgroundMusic.paused) return;
 
-  backgroundMusic.volume = 0.12;
+  backgroundMusic.volume = musicVolume;
   backgroundMusic.play().catch(() => {
     /* Browsers may block audio until the next direct player interaction. */
   });
@@ -248,8 +263,9 @@ function createFoodLabels() {
     cucumber: [45, 84],
     onion: [56, 84],
     /* Sauce labels are deliberately staggered so BM + 中文 never overlap. */
-    white: [56, 61],
-    red: [62, 53]
+    /* Center labels on the actual sauce bottles, with separate heights for bilingual text. */
+    white: [57, 67],
+    red: [62, 61]
   };
 
   layer.innerHTML = "";
@@ -411,6 +427,10 @@ function finishQuiz(isCorrect) {
 
   phase = "quiz-result";
   answeredQuestions += 1;
+  const quizCard = document.querySelector(".quiz-card");
+  quizCard.classList.remove("answer-correct", "answer-wrong");
+  quizCard.classList.add(isCorrect ? "answer-correct" : "answer-wrong");
+  document.querySelectorAll("#answers button").forEach(button => { button.disabled = true; });
 
   if (isCorrect) {
     correctQuestions += 1;
@@ -437,6 +457,7 @@ function finishQuiz(isCorrect) {
   ui();
 
   setTimeout(() => {
+    quizCard.classList.remove("answer-correct", "answer-wrong");
     quizScreen.classList.remove("visible");
 
     if (answeredQuestions === quizBank.length) {
@@ -524,6 +545,7 @@ function showQuiz() {
   questionText.textContent = prompt;
   quizFeedback.textContent = "";
   answers.innerHTML = "";
+  document.querySelector(".quiz-card").classList.remove("answer-correct", "answer-wrong");
 
   [correct, ...wrong].sort(() => Math.random() - 0.5).forEach(answer => {
     const button = document.createElement("button");
@@ -545,12 +567,18 @@ const closeSettingsButton = document.querySelector("#closeSettingsButton");
 const sfxToggle = document.querySelector("#sfxToggle");
 const sfxVolume = document.querySelector("#sfxVolume");
 const sfxValue = document.querySelector("#sfxValue");
+const musicVolumeSlider = document.querySelector("#musicVolume");
+const musicValue = document.querySelector("#musicValue");
 const testSfxButton = document.querySelector("#testSfxButton");
+const continueButton = document.querySelector("#continueButton");
+const homeButton = document.querySelector("#homeButton");
 
 function refreshSFXSettings() {
   sfxToggle.checked = sfxManager.enabled;
   sfxVolume.value = Math.round(sfxManager.volume * 100);
   sfxValue.textContent = `${sfxVolume.value}%`;
+  musicVolumeSlider.value = Math.round(musicVolume * 100);
+  musicValue.textContent = `${musicVolumeSlider.value}%`;
 }
 
 function openSFXSettings() {
@@ -577,6 +605,10 @@ sfxVolume.oninput = () => {
   sfxManager.setSFXVolume(Number(sfxVolume.value) / 100);
   sfxValue.textContent = `${sfxVolume.value}%`;
 };
+musicVolumeSlider.oninput = () => {
+  setMusicVolume(Number(musicVolumeSlider.value) / 100);
+  musicValue.textContent = `${musicVolumeSlider.value}%`;
+};
 testSfxButton.onclick = () => {
   if (!sfxToggle.checked) {
     sfxToggle.checked = true;
@@ -588,6 +620,18 @@ testSfxButton.onclick = () => {
 };
 settingsScreen.onclick = event => {
   if (event.target === settingsScreen) closeSFXSettings();
+};
+continueButton.onclick = closeSFXSettings;
+homeButton.onclick = () => {
+  sfxManager.playSFX("buttonConfirm");
+  sfxManager.stopAllLoopSFX();
+  settingsScreen.classList.remove("visible");
+  settingsScreen.setAttribute("aria-hidden", "true");
+  gameScreen.classList.remove("visible");
+  quizScreen.classList.remove("visible");
+  endScreen.classList.remove("visible");
+  homeScreen.classList.add("visible");
+  phase = "idle";
 };
 
 document.addEventListener("visibilitychange", () => {
