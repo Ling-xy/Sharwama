@@ -21,7 +21,7 @@ function playBackgroundMusic() {
 
   if (!backgroundMusic || !backgroundMusic.paused) return;
 
-  backgroundMusic.volume = 0.28;
+  backgroundMusic.volume = 0.12;
   backgroundMusic.play().catch(() => {
     /* Browsers may block audio until the next direct player interaction. */
   });
@@ -52,6 +52,13 @@ class SFXManager {
     }
     if (this.context.state === "suspended") this.context.resume().catch(() => {});
     return true;
+  }
+
+  isReadyForSFX(retry) {
+    if (!this.initSFX()) return false;
+    if (this.context.state === "running") return true;
+    this.context.resume().then(() => retry()).catch(() => {});
+    return false;
   }
 
   setSFXVolume(value) {
@@ -116,7 +123,8 @@ class SFXManager {
   }
 
   playSFX(name) {
-    if (!this.enabled || !this.initSFX() || !this.canPlay(name)) return;
+    if (!this.enabled) return;
+    if (!this.isReadyForSFX(() => this.playSFX(name)) || !this.canPlay(name)) return;
     const cutPitch = 230 + Math.random() * 45;
     const simpleClick = () => { this.tone(240, 0.065, 0.055, "triangle", -25); this.later(28, () => this.tone(650, 0.055, 0.03, "sine")); };
     const bright = () => { this.tone(470, 0.07, 0.07, "triangle", 110); this.later(65, () => this.tone(690, 0.11, 0.06, "sine", 120)); };
@@ -159,7 +167,8 @@ class SFXManager {
   }
 
   playLoopSFX(name) {
-    if (!this.enabled || this.loops.has(name) || !this.initSFX()) return;
+    if (!this.enabled || this.loops.has(name)) return;
+    if (!this.isReadyForSFX(() => this.playLoopSFX(name))) return;
     const playTick = () => {
       if (!this.enabled || !this.loops.has(name)) return;
       if (name === "grillLoop") {
@@ -239,8 +248,8 @@ function createFoodLabels() {
     cucumber: [45, 84],
     onion: [56, 84],
     /* Sauce labels are deliberately staggered so BM + 中文 never overlap. */
-    white: [51, 53],
-    red: [64, 47]
+    white: [46, 61],
+    red: [52.5, 53]
   };
 
   layer.innerHTML = "";
@@ -536,6 +545,7 @@ const closeSettingsButton = document.querySelector("#closeSettingsButton");
 const sfxToggle = document.querySelector("#sfxToggle");
 const sfxVolume = document.querySelector("#sfxVolume");
 const sfxValue = document.querySelector("#sfxValue");
+const testSfxButton = document.querySelector("#testSfxButton");
 
 function refreshSFXSettings() {
   sfxToggle.checked = sfxManager.enabled;
@@ -566,6 +576,15 @@ sfxToggle.onchange = () => {
 sfxVolume.oninput = () => {
   sfxManager.setSFXVolume(Number(sfxVolume.value) / 100);
   sfxValue.textContent = `${sfxVolume.value}%`;
+};
+testSfxButton.onclick = () => {
+  if (!sfxToggle.checked) {
+    sfxToggle.checked = true;
+    sfxManager.toggleSFX(true);
+  }
+  sfxManager.playSFX("buttonConfirm");
+  sfxManager.later(120, () => sfxManager.playSFX("coin"));
+  sfxManager.later(240, () => sfxManager.playSFX("addLettuce"));
 };
 settingsScreen.onclick = event => {
   if (event.target === settingsScreen) closeSFXSettings();
