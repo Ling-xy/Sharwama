@@ -178,6 +178,7 @@ body { margin: 0; overflow: hidden; background: #102d44; }
 .sound-slider span { grid-column: 1 / -1; }
 .sound-slider input { width: 100%; accent-color: #bc6d21; }
 .sound-slider output { text-align: right; font-variant-numeric: tabular-nums; }
+.test-sfx-button { width: 100%; margin-top: 8px; padding: 11px 14px; border: 3px solid #fff0bd; border-radius: 12px; background: linear-gradient(#e3ae4d, #9a5b22); color: #fffdf2; box-shadow: 0 3px 0 #6a3217; cursor: pointer; font-size: 16px; font-weight: 800; }
 
 .wrapping { pointer-events: none; }
 .wrapping::after { filter: brightness(1.14); transform: scale(.96); }
