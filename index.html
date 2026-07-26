@@ -7,6 +7,111 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <audio id="backgroundMusic" loop preload="auto">
+    <source src="shawarma-street-dance.mp3" type="audio/mpeg">
+  </audio>
+  <main id="app">
+    <section id="homeScreen" class="screen visible">
+      <header class="title-board">
+        <h1 id="gameTitle">SHAWARMA TOKOH TERBILANG MELAKA</h1>
+        <p id="gameSubtitle">Belajar sambil bermain!</p>
+      </header>
+
+      <aside class="language-card">
+        <h2 id="languageHeading">PILIH BAHASA</h2>
+        <button data-language="bm">Bahasa Melayu</button>
+        <button data-language="zh">中文</button>
+        <button data-language="both">BM + 中文</button>
+      </aside>
+
+      <button id="startButton" class="start-button">MULA</button>
+    </section>
+
+    <section id="gameScreen" class="screen">
+      <header class="hud">
+        <div><span id="scoreLabel">SKOR</span><strong id="score">0</strong></div>
+        <div><span id="coinLabel">SYILING</span><strong id="coins">0</strong></div>
+        <div><span id="orderLabel">PESANAN</span><strong id="orderCount">1</strong></div>
+      </header>
+
+      <section class="order-card">
+        <h2 id="requestTitle">PESANAN PELANGGAN</h2>
+        <p id="requestText"></p>
+      </section>
+
+      <p id="instruction" class="instruction"></p>
+
+      <button id="grillButton" class="hotspot grill" aria-label="Grill"></button>
+      <button id="meatButton" class="hotspot tray meat" data-food="meat"></button>
+      <button class="hotspot tray lettuce" data-food="lettuce"></button>
+      <button class="hotspot tray tomato" data-food="tomato"></button>
+      <button class="hotspot tray cucumber" data-food="cucumber"></button>
+      <button class="hotspot tray onion" data-food="onion"></button>
+      <button id="redSauceButton" class="hotspot sauce red" data-food="red"></button>
+      <button id="whiteSauceButton" class="hotspot sauce white" data-food="white"></button>
+      <button id="flatbreadButton" class="hotspot flatbread"></button>
+      <button id="serveButton" class="hotspot serve"></button>
+
+      <div class="food-labels" id="foodLabels"></div>
+      <div id="flatbreadToppings" aria-live="polite"></div>
+      <div id="toast" role="status"></div>
+    </section>
+
+    <section id="quizScreen" class="screen quiz-screen">
+      <article class="quiz-card">
+        <h2 id="quizTitle">KUIZ TOKOH</h2>
+        <p id="questionText"></p>
+        <div id="answers"></div>
+        <p id="quizFeedback"></p>
+      </article>
+    </section>
+
+    <section id="endScreen" class="screen end-screen">
+      <article class="end-card">
+        <p class="end-stars" aria-hidden="true">★ ★ ★</p>
+        <h2 id="endTitle">Tahniah, Cef Diraja Melaka!</h2>
+        <p id="endSubtitle">Anda telah melengkapkan 20 soalan tokoh terbilang.</p>
+
+        <div class="result-grid">
+          <div>
+            <span id="endScoreLabel">SKOR</span>
+            <strong id="endScore">0</strong>
+          </div>
+          <div>
+            <span id="endCoinLabel">SYILING</span>
+            <strong id="endCoins">0</strong>
+          </div>
+          <div>
+            <span id="endCorrectLabel">JAWAPAN BETUL</span>
+            <strong id="endCorrect">0 / 20</strong>
+          </div>
+          <div>
+            <span id="endWrongLabel">JAWAPAN SALAH</span>
+            <strong id="endWrong">0</strong>
+          </div>
+          <div>
+            <span id="endRateLabel">KETEPATAN</span>
+            <strong id="endRate">0%</strong>
+          </div>
+        </div>
+
+        <button id="restartButton" class="restart-button">MAIN LAGI</button>
+      </article>
+    </section>
+  </main>
+  <script src="game.js"></script>
+</body>
+</html>
+
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shawarma Tokoh Terbilang Melaka</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
   <main id="app">
     <section id="homeScreen" class="screen visible">
       <header class="title-board">
