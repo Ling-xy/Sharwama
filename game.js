@@ -248,8 +248,8 @@ function createFoodLabels() {
     cucumber: [45, 84],
     onion: [56, 84],
     /* Sauce labels are deliberately staggered so BM + 中文 never overlap. */
-    white: [46, 61],
-    red: [52.5, 53]
+    white: [56, 61],
+    red: [62, 53]
   };
 
   layer.innerHTML = "";
