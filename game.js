@@ -16,6 +16,17 @@ let orderNumber = 1;
 let answeredQuestions = 0;
 let correctQuestions = 0;
 
+function playBackgroundMusic() {
+  const backgroundMusic = document.querySelector("#backgroundMusic");
+
+  if (!backgroundMusic || !backgroundMusic.paused) return;
+
+  backgroundMusic.volume = 0.28;
+  backgroundMusic.play().catch(() => {
+    /* Browsers may block audio until the next direct player interaction. */
+  });
+}
+
 const orderPatterns = [
   ["meat", "lettuce", "tomato", "white"],
   ["meat", "onion", "cucumber", "red"],
@@ -79,6 +90,7 @@ function createFoodLabels() {
   });
 }
 function startGame() {
+  playBackgroundMusic();
   score = 0;
   coins = 0;
   orderNumber = 1;
