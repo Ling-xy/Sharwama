@@ -31,10 +31,12 @@ function playBackgroundMusic() {
 class SFXManager {
   constructor() {
     const savedEnabled = localStorage.getItem("shawarma-sfx-enabled");
-    const savedVolume = Number(localStorage.getItem("shawarma-sfx-volume"));
+    const savedVolume = localStorage.getItem("shawarma-sfx-volume");
 
     this.enabled = savedEnabled === null ? true : savedEnabled === "true";
-    this.volume = Number.isFinite(savedVolume) && savedVolume >= 0 ? Math.min(savedVolume, 1) : 0.65;
+    this.volume = savedVolume !== null && Number.isFinite(Number(savedVolume)) && Number(savedVolume) >= 0
+      ? Math.min(Number(savedVolume), 1)
+      : 0.65;
     this.context = null;
     this.loops = new Map();
     this.lastPlayed = new Map();
