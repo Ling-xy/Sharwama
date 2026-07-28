@@ -207,7 +207,7 @@ body { margin: 0; overflow: hidden; background: #102d44; }
 .settings-actions button span { font-size: 1.15em; margin-right: 5px; }.settings-continue { background: linear-gradient(#7caf39, #3d7c2c); }.settings-home { background: linear-gradient(#55a6dd, #21649d); }
 
 /* The settings screen uses the learner's supplied artwork directly. Functional controls are transparent hotspots on the matching artwork controls. */
-.settings-card { width: auto; height: min(92vh, 900px); aspect-ratio: 1054 / 1148; padding: 0; overflow: visible; background: url("settings-popup-reference.jpg") center / contain no-repeat; border: 0; border-radius: 0; box-shadow: none; }
+.settings-card { width: auto; height: min(92vh, 900px); aspect-ratio: 1054 / 1148; padding: 0; overflow: visible; background: url("assets/ui/settings-popup-clean.jpg") center / contain no-repeat; border: 0; border-radius: 0; box-shadow: none; }
 .settings-card::before, .settings-card::after, .settings-wood-header { display: none; }
 .settings-close { top: 7.4%; right: 6.7%; width: 10.5%; height: 10.5%; padding: 0; border: 0; border-radius: 50%; background: transparent; box-shadow: none; color: transparent; font-size: 0; line-height: 1; }
 .settings-content { position: absolute; inset: 0; padding: 0; }
@@ -237,37 +237,25 @@ body { margin: 0; overflow: hidden; background: #102d44; }
   background: transparent;
   pointer-events: auto;
 }
-.sound-slider::before {
-  content: "";
-  position: absolute;
-  z-index: 1;
-  top: 0;
-  left: -1%;
-  width: 102%;
-  height: 100%;
-  transform: none;
-  border-radius: 0;
-  background: #f7e1ae;
-  pointer-events: none;
-}
+.sound-slider::before { display: none; }
 .settings-row input[type="range"]::-webkit-slider-runnable-track {
-  height: 3.5cqw;
-  border: 0;
+  height: 2.9cqw;
+  border: 1px solid #b5661b;
   border-radius: 999px;
-  background: linear-gradient(to right, #e99a1f 0 var(--slider-progress), #f3e6c5 var(--slider-progress) 100%);
-  box-shadow: inset 0 2px 2px #7d3c16, inset 0 0 0 2px #b76717, 0 1px 0 #fff0a1;
+  background: linear-gradient(to right, #efae2f 0 var(--slider-progress), #f5e7c4 var(--slider-progress) 100%);
+  box-shadow: inset 0 1px 1px #fff6c9;
 }
 .settings-row input[type="range"]::-moz-range-track {
-  height: 3.5cqw;
-  border: 0;
+  height: 2.9cqw;
+  border: 1px solid #b5661b;
   border-radius: 999px;
-  background: linear-gradient(to right, #e99a1f 0 var(--slider-progress), #f3e6c5 var(--slider-progress) 100%);
-  box-shadow: inset 0 2px 2px #7d3c16, inset 0 0 0 2px #b76717, 0 1px 0 #fff0a1;
+  background: linear-gradient(to right, #efae2f 0 var(--slider-progress), #f5e7c4 var(--slider-progress) 100%);
+  box-shadow: inset 0 1px 1px #fff6c9;
 }
 .settings-row input[type="range"]::-webkit-slider-thumb {
-  width: 6.1cqw;
-  height: 6.1cqw;
-  margin-top: -1.3cqw;
+  width: 5.8cqw;
+  height: 5.8cqw;
+  margin-top: -1.45cqw;
   border: 0;
   border-radius: 50%;
   appearance: none;
@@ -278,8 +266,8 @@ body { margin: 0; overflow: hidden; background: #102d44; }
 }
 .settings-row input[type="range"]:active::-webkit-slider-thumb { cursor: grabbing; }
 .settings-row input[type="range"]::-moz-range-thumb {
-  width: 6.1cqw;
-  height: 6.1cqw;
+  width: 5.8cqw;
+  height: 5.8cqw;
   border: 0;
   border-radius: 50%;
   background: url("assets/ui/settings-slider-flower.png") center / contain no-repeat;
