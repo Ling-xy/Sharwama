@@ -15,6 +15,10 @@ let coins = 0;
 let orderNumber = 1;
 let answeredQuestions = 0;
 let correctQuestions = 0;
+let grillTimer = null;
+let grillRemainingMs = 0;
+let grillTimerStartedAt = 0;
+let settingsPausedGrill = false;
 let musicVolume = Number(localStorage.getItem("shawarma-music-volume"));
 
 if (!Number.isFinite(musicVolume) || musicVolume < 0) musicVolume = 0.12;
@@ -40,6 +44,41 @@ function playBackgroundMusic() {
   backgroundMusic.play().catch(() => {
     /* Browsers may block audio until the next direct player interaction. */
   });
+}
+
+function finishGrillCooking() {
+  grillTimer = null;
+  grillRemainingMs = 0;
+  if (phase !== "grill-cooking") return;
+  sfxManager.stopLoopSFX("grillLoop");
+  sfxManager.playSFX("grillPerfect");
+  phase = "ingredients";
+  instruction.textContent = language === "zh" ? "烤肉完成。点击订单中的食材。" : language === "bm" ? "Daging siap. Pilih bahan dalam pesanan." : "Daging siap｜烤肉完成。点击订单食材。";
+  toast(language === "zh" ? "烤肉完成！" : "Daging siap!");
+}
+
+function scheduleGrillFinish(delay) {
+  window.clearTimeout(grillTimer);
+  grillRemainingMs = Math.max(0, delay);
+  grillTimerStartedAt = performance.now();
+  grillTimer = window.setTimeout(finishGrillCooking, grillRemainingMs);
+}
+
+function pauseGrillForSettings() {
+  settingsPausedGrill = false;
+  if (phase !== "grill-cooking" || grillTimer === null) return;
+  grillRemainingMs = Math.max(0, grillRemainingMs - (performance.now() - grillTimerStartedAt));
+  window.clearTimeout(grillTimer);
+  grillTimer = null;
+  settingsPausedGrill = true;
+  sfxManager.stopLoopSFX("grillLoop");
+}
+
+function resumeGrillAfterSettings() {
+  if (!settingsPausedGrill || phase !== "grill-cooking") return;
+  settingsPausedGrill = false;
+  sfxManager.playLoopSFX("grillLoop");
+  scheduleGrillFinish(grillRemainingMs);
 }
 
 /* Original, synthesized game effects. They use Web Audio and never replace the music track. */
@@ -367,6 +406,10 @@ function createFoodLabels() {
   });
 }
 function startGame() {
+  window.clearTimeout(grillTimer);
+  grillTimer = null;
+  grillRemainingMs = 0;
+  settingsPausedGrill = false;
   sfxManager.initSFX();
   sfxManager.stopAllLoopSFX();
   sfxManager.playSFX("buttonConfirm");
@@ -441,14 +484,7 @@ grillButton.onclick = () => {
   sfxManager.playLoopSFX("grillLoop");
   phase = "grill-cooking";
   instruction.textContent = language === "zh" ? "烤肉进行中……" : language === "bm" ? "Daging sedang dimasak…" : "Daging sedang dimasak…｜烤肉进行中……";
-  window.setTimeout(() => {
-    if (phase !== "grill-cooking") return;
-    sfxManager.stopLoopSFX("grillLoop");
-    sfxManager.playSFX("grillPerfect");
-    phase = "ingredients";
-    instruction.textContent = language === "zh" ? "烤肉完成。点击订单中的食材。" : language === "bm" ? "Daging siap. Pilih bahan dalam pesanan." : "Daging siap｜烤肉完成。点击订单食材。";
-    toast(language === "zh" ? "烤肉完成！" : "Daging siap!");
-  }, 520);
+  scheduleGrillFinish(520);
 };
 flatbreadButton.onclick = () => {
   if (phase !== "wrap") {
@@ -669,6 +705,7 @@ function refreshSFXSettings() {
 function openSFXSettings() {
   sfxManager.playSFX("buttonClick");
   refreshSFXSettings();
+  pauseGrillForSettings();
   settingsScreen.classList.add("visible");
   settingsScreen.setAttribute("aria-hidden", "false");
 }
@@ -677,6 +714,7 @@ function closeSFXSettings() {
   sfxManager.playSFX("buttonClick");
   settingsScreen.classList.remove("visible");
   settingsScreen.setAttribute("aria-hidden", "true");
+  resumeGrillAfterSettings();
 }
 
 settingsButton.onclick = openSFXSettings;
@@ -710,6 +748,10 @@ continueButton.onclick = closeSFXSettings;
 homeButton.onclick = () => {
   sfxManager.playSFX("buttonConfirm");
   sfxManager.stopAllLoopSFX();
+  window.clearTimeout(grillTimer);
+  grillTimer = null;
+  grillRemainingMs = 0;
+  settingsPausedGrill = false;
   settingsScreen.classList.remove("visible");
   settingsScreen.setAttribute("aria-hidden", "true");
   gameScreen.classList.remove("visible");
