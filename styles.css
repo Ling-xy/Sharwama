@@ -241,16 +241,15 @@ body { margin: 0; overflow: hidden; background: #102d44; }
   content: "";
   position: absolute;
   z-index: 1;
-  top: 50%;
-  width: 8cqw;
-  height: 8cqw;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
+  top: 0;
+  left: -1%;
+  width: 102%;
+  height: 100%;
+  transform: none;
+  border-radius: 0;
   background: #f7e1ae;
   pointer-events: none;
 }
-.sound-slider:nth-child(1)::before { left: 50%; }
-.sound-slider:nth-child(3)::before { left: 96%; }
 .settings-row input[type="range"]::-webkit-slider-runnable-track {
   height: 3.5cqw;
   border: 0;
