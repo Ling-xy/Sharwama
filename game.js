@@ -705,6 +705,7 @@ function refreshSliderPosition(slider) {
 
 function refreshSFXSettings() {
   sfxToggle.checked = sfxManager.enabled;
+  sfxToggle.closest(".sound-row")?.classList.toggle("is-off", !sfxManager.enabled);
   sfxVolume.value = Math.round(sfxManager.volume * 100);
   sfxValue.textContent = `${sfxVolume.value}%`;
   // The settings artwork shows a full 0–100 scale while playback remains
@@ -735,6 +736,7 @@ gameSettingsButton.onclick = openSFXSettings;
 closeSettingsButton.onclick = closeSFXSettings;
 sfxToggle.onchange = () => {
   sfxManager.toggleSFX(sfxToggle.checked);
+  sfxToggle.closest(".sound-row")?.classList.toggle("is-off", !sfxToggle.checked);
   if (sfxToggle.checked) sfxManager.playSFX("buttonConfirm");
 };
 sfxVolume.oninput = () => {

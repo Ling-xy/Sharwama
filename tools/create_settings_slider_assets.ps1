@@ -67,4 +67,13 @@ for ($y = 0; $y -lt 62; $y++) {
   }
 }
 $flower.Save((Join-Path $outputDir 'settings-slider-flower.png'), [System.Drawing.Imaging.ImageFormat]::Png)
-$flower.Dispose(); $source.Dispose()
+$flower.Dispose()
+
+# The original switch is similarly extracted as one opaque art layer so the
+# visible state can change without adding a second drawn control on top.
+$switchArt = New-Object System.Drawing.Bitmap 144,86
+$switchGraphics = [System.Drawing.Graphics]::FromImage($switchArt)
+$switchGraphics.DrawImage($source, (New-Object System.Drawing.Rectangle(0,0,144,86)), 820,492,144,86, [System.Drawing.GraphicsUnit]::Pixel)
+$switchGraphics.Dispose()
+$switchArt.Save((Join-Path $outputDir 'settings-sfx-switch-on.png'), [System.Drawing.Imaging.ImageFormat]::Png)
+$switchArt.Dispose(); $source.Dispose()

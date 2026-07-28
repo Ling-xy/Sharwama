@@ -271,6 +271,17 @@ body { margin: 0; overflow: hidden; background: #102d44; }
   pointer-events: auto;
   touch-action: manipulation;
 }
+.sfx-toggle-art {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  background: url("assets/ui/settings-sfx-switch-on.png") center / 100% 100% no-repeat;
+  pointer-events: none;
+  transition: filter .16s ease;
+}
+.sound-row.is-off .sfx-toggle-art {
+  filter: grayscale(1) brightness(.62) contrast(.9);
+}
 .sound-slider input[type="range"]::-webkit-slider-runnable-track,
 .sound-slider input[type="range"]::-moz-range-track { background: transparent; border: 0; height: 100%; }
 .sound-slider input[type="range"]::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 1px; height: 1px; border: 0; background: transparent; box-shadow: none; }
