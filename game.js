@@ -694,12 +694,23 @@ const testSfxButton = document.querySelector("#testSfxButton");
 const continueButton = document.querySelector("#continueButton");
 const homeButton = document.querySelector("#homeButton");
 
+function refreshSliderPosition(slider) {
+  const minimum = Number(slider.min) || 0;
+  const maximum = Number(slider.max) || 100;
+  const value = Number(slider.value);
+  const progress = Math.max(0, Math.min(100, ((value - minimum) / (maximum - minimum || 1)) * 100));
+  slider.style.setProperty("--slider-progress", `${progress}%`);
+  slider.setAttribute("aria-valuetext", `${Math.round(value)}%`);
+}
+
 function refreshSFXSettings() {
   sfxToggle.checked = sfxManager.enabled;
   sfxVolume.value = Math.round(sfxManager.volume * 100);
   sfxValue.textContent = `${sfxVolume.value}%`;
   musicVolumeSlider.value = Math.round(musicVolume * 100);
   musicValue.textContent = `${musicVolumeSlider.value}%`;
+  refreshSliderPosition(sfxVolume);
+  refreshSliderPosition(musicVolumeSlider);
 }
 
 function openSFXSettings() {
@@ -727,10 +738,12 @@ sfxToggle.onchange = () => {
 sfxVolume.oninput = () => {
   sfxManager.setSFXVolume(Number(sfxVolume.value) / 100);
   sfxValue.textContent = `${sfxVolume.value}%`;
+  refreshSliderPosition(sfxVolume);
 };
 musicVolumeSlider.oninput = () => {
   setMusicVolume(Number(musicVolumeSlider.value) / 100);
   musicValue.textContent = `${musicVolumeSlider.value}%`;
+  refreshSliderPosition(musicVolumeSlider);
 };
 testSfxButton.onclick = () => {
   if (!sfxToggle.checked) {

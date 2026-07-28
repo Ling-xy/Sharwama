@@ -224,9 +224,12 @@ body { margin: 0; overflow: hidden; background: #102d44; }
 .settings-actions button { padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; color: transparent; font-size: 0; text-shadow: none; }
 .settings-actions button span { display: none; }
 
-/* The supplied artwork provides the rail; the real range inputs provide a movable handle. */
+/* The two printed flowers are part of the supplied reference artwork.  The
+   actual controls below cover only those fixed flowers and use the supplied
+   flower crop as their sole movable thumb. */
 .settings-row input[type="range"] {
-  z-index: 5;
+  --slider-progress: 0%;
+  z-index: 2;
   display: block;
   opacity: 1;
   appearance: none;
@@ -234,37 +237,54 @@ body { margin: 0; overflow: hidden; background: #102d44; }
   background: transparent;
   pointer-events: auto;
 }
-.settings-row input[type="range"]::-webkit-slider-runnable-track {
-  height: 18px;
-  border-radius: 999px;
-  background: transparent;
+.sound-slider::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  width: 8cqw;
+  height: 8cqw;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: #f7e1ae;
+  pointer-events: none;
 }
-.settings-row input[type="range"]::-moz-range-track {
-  height: 18px;
+.sound-slider:nth-child(1)::before { left: 50%; }
+.sound-slider:nth-child(3)::before { left: 96%; }
+.settings-row input[type="range"]::-webkit-slider-runnable-track {
+  height: 3.5cqw;
   border: 0;
   border-radius: 999px;
-  background: transparent;
+  background: linear-gradient(to right, #e99a1f 0 var(--slider-progress), #f3e6c5 var(--slider-progress) 100%);
+  box-shadow: inset 0 2px 2px #7d3c16, inset 0 0 0 2px #b76717, 0 1px 0 #fff0a1;
+}
+.settings-row input[type="range"]::-moz-range-track {
+  height: 3.5cqw;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(to right, #e99a1f 0 var(--slider-progress), #f3e6c5 var(--slider-progress) 100%);
+  box-shadow: inset 0 2px 2px #7d3c16, inset 0 0 0 2px #b76717, 0 1px 0 #fff0a1;
 }
 .settings-row input[type="range"]::-webkit-slider-thumb {
-  width: 32px;
-  height: 32px;
-  margin-top: -7px;
-  border: 3px solid #754016;
+  width: 6.1cqw;
+  height: 6.1cqw;
+  margin-top: -1.3cqw;
+  border: 0;
   border-radius: 50%;
   appearance: none;
   -webkit-appearance: none;
-  background: radial-gradient(circle, #ffe8a4 0 19%, #e49a22 21% 53%, #8d4817 55% 100%);
-  box-shadow: 0 2px 0 #56280e, inset 0 0 0 2px #ffdc69;
+  background: url("assets/ui/settings-slider-flower.png") center / contain no-repeat;
+  box-shadow: none;
   cursor: grab;
 }
-.settings-row input[type="range"]:active::-webkit-slider-thumb { cursor: grabbing; transform: scale(1.08); }
+.settings-row input[type="range"]:active::-webkit-slider-thumb { cursor: grabbing; }
 .settings-row input[type="range"]::-moz-range-thumb {
-  width: 28px;
-  height: 28px;
-  border: 3px solid #754016;
+  width: 6.1cqw;
+  height: 6.1cqw;
+  border: 0;
   border-radius: 50%;
-  background: radial-gradient(circle, #ffe8a4 0 19%, #e49a22 21% 53%, #8d4817 55% 100%);
-  box-shadow: 0 2px 0 #56280e, inset 0 0 0 2px #ffdc69;
+  background: url("assets/ui/settings-slider-flower.png") center / contain no-repeat;
+  box-shadow: none;
   cursor: grab;
 }
 
@@ -283,13 +303,14 @@ body { margin: 0; overflow: hidden; background: #102d44; }
   overflow-x: hidden;
 }
 .settings-card {
-  width: min(92vw, 860px);
+  width: min(86vw, 720px, calc((100dvh - 32px) * .918));
   height: auto;
   min-height: 0;
   aspect-ratio: 1054 / 1148;
   margin: max(12px, 3vh) auto;
   overflow: visible;
   isolation: isolate;
+  container-type: inline-size;
 }
 .settings-content,
 .settings-actions {
@@ -327,7 +348,7 @@ body { margin: 0; overflow: hidden; background: #102d44; }
 .settings-close:active { transform: scale(.94); }
 
 /* A native range input remains the single draggable control on each printed
-   rail.  Its handle is visible, while the rail stays the learner's artwork. */
+   rail.  The browser chrome is fully replaced by the supplied flower art. */
 .settings-row input[type="range"] {
   touch-action: pan-x;
 }
