@@ -206,73 +206,80 @@ body { margin: 0; overflow: hidden; background: #102d44; }
 .settings-actions button { padding: 16px 10px; border: 5px solid #633015; border-radius: 18px; box-shadow: inset 0 0 0 3px #ffe797, 0 5px 0 #4d210e; color: #fff4c1; cursor: pointer; font-size: clamp(17px, 2.4vw, 25px); font-weight: 900; text-shadow: 0 3px #4e2510; }
 .settings-actions button span { font-size: 1.15em; margin-right: 5px; }.settings-continue { background: linear-gradient(#7caf39, #3d7c2c); }.settings-home { background: linear-gradient(#55a6dd, #21649d); }
 
-/* The settings screen uses the learner's supplied artwork directly. Functional controls are transparent hotspots on the matching artwork controls. */
-.settings-card { width: auto; height: min(92vh, 900px); aspect-ratio: 1054 / 1148; padding: 0; overflow: visible; background: url("assets/ui/settings-popup-clean.jpg") center / contain no-repeat; border: 0; border-radius: 0; box-shadow: none; }
+/* The supplied image remains the visual frame. Its two printed slider regions
+   were removed from the derived base asset so the only visible rails and
+   flowers below are the real independent controls. */
+.settings-card { width: auto; height: min(92vh, 900px); aspect-ratio: 1054 / 1148; padding: 0; overflow: visible; background: url("assets/ui/settings-popup-sliderless.jpg") center / contain no-repeat; border: 0; border-radius: 0; box-shadow: none; }
 .settings-card::before, .settings-card::after, .settings-wood-header { display: none; }
 .settings-close { top: 7.4%; right: 6.7%; width: 10.5%; height: 10.5%; padding: 0; border: 0; border-radius: 50%; background: transparent; box-shadow: none; color: transparent; font-size: 0; line-height: 1; }
 .settings-content { position: absolute; inset: 0; padding: 0; }
 .settings-row { position: absolute; min-height: 0; margin: 0; padding: 0; border: 0; }
 .settings-row .setting-icon, .settings-row .setting-name { display: none; }
-.settings-row input, .settings-row output { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: .01; cursor: pointer; }
-.settings-row output { display: none; }
-.sound-slider:nth-child(1) { left: 23%; top: 32%; width: 55%; height: 6%; }
+.settings-row input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.settings-row output { position: absolute; width: 18%; height: auto; margin: 0; cursor: default; }
+.sound-slider:nth-child(1) { left: 23.5%; top: 30.75%; width: 54%; height: 5.2%; }
 .sound-row:nth-child(2) { left: 77%; top: 43%; width: 14%; height: 7%; }
-.sound-slider:nth-child(3) { left: 23%; top: 62%; width: 55%; height: 6%; }
+.sound-slider:nth-child(3) { left: 23.5%; top: 60.95%; width: 54%; height: 5.2%; }
 .test-sfx-button { position: absolute; left: 10%; top: 70%; width: 80%; height: 10%; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; color: transparent; font-size: 0; }
 .test-sfx-button span { display: none; }
 .settings-actions { position: absolute; left: 10%; top: 84%; width: 80%; height: 9%; margin: 0; padding: 0; gap: 3%; }
 .settings-actions button { padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; color: transparent; font-size: 0; text-shadow: none; }
 .settings-actions button span { display: none; }
 
-/* The two printed flowers are part of the supplied reference artwork.  The
-   actual controls below cover only those fixed flowers and use the supplied
-   flower crop as their sole movable thumb. */
-.settings-row input[type="range"] {
+/* Each range input is invisible and only receives mouse/touch interaction.
+   No browser track, browser thumb, hover ring, or second rail is visible. */
+.sound-slider {
   --slider-progress: 0%;
+  overflow: visible;
+}
+.slider-rail-art {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  top: 50%;
+  width: 100%;
+  height: 45%;
+  transform: translateY(-50%);
+  background: url("assets/ui/settings-slider-rail.png") center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+.slider-flower-art {
+  position: absolute;
   z-index: 2;
-  display: block;
-  opacity: 1;
+  left: var(--slider-progress);
+  top: 50%;
+  width: 10.9%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  background: url("assets/ui/settings-slider-flower.png") center / contain no-repeat;
+  pointer-events: none;
+}
+.sound-slider input[type="range"] {
+  z-index: 3;
   appearance: none;
   -webkit-appearance: none;
   background: transparent;
-  pointer-events: auto;
-}
-.sound-slider::before { display: none; }
-.settings-row input[type="range"]::-webkit-slider-runnable-track {
-  height: 2.9cqw;
-  border: 1px solid #b5661b;
-  border-radius: 999px;
-  background: linear-gradient(to right, #efae2f 0 var(--slider-progress), #f5e7c4 var(--slider-progress) 100%);
-  box-shadow: inset 0 1px 1px #fff6c9;
-}
-.settings-row input[type="range"]::-moz-range-track {
-  height: 2.9cqw;
-  border: 1px solid #b5661b;
-  border-radius: 999px;
-  background: linear-gradient(to right, #efae2f 0 var(--slider-progress), #f5e7c4 var(--slider-progress) 100%);
-  box-shadow: inset 0 1px 1px #fff6c9;
-}
-.settings-row input[type="range"]::-webkit-slider-thumb {
-  width: 5.8cqw;
-  height: 5.8cqw;
-  margin-top: -1.45cqw;
   border: 0;
-  border-radius: 50%;
-  appearance: none;
-  -webkit-appearance: none;
-  background: url("assets/ui/settings-slider-flower.png") center / contain no-repeat;
+  outline: 0;
   box-shadow: none;
-  cursor: grab;
+  touch-action: pan-x;
 }
-.settings-row input[type="range"]:active::-webkit-slider-thumb { cursor: grabbing; }
-.settings-row input[type="range"]::-moz-range-thumb {
-  width: 5.8cqw;
-  height: 5.8cqw;
-  border: 0;
-  border-radius: 50%;
-  background: url("assets/ui/settings-slider-flower.png") center / contain no-repeat;
-  box-shadow: none;
-  cursor: grab;
+.sound-slider input[type="range"]::-webkit-slider-runnable-track,
+.sound-slider input[type="range"]::-moz-range-track { background: transparent; border: 0; height: 100%; }
+.sound-slider input[type="range"]::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 1px; height: 1px; border: 0; background: transparent; box-shadow: none; }
+.sound-slider input[type="range"]::-moz-range-thumb { width: 1px; height: 1px; border: 0; background: transparent; box-shadow: none; }
+.sound-slider output {
+  z-index: 4;
+  left: 107%;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #58270f;
+  font-size: 4cqw;
+  font-weight: 900;
+  line-height: 1;
+  text-align: left;
+  opacity: 1;
+  pointer-events: none;
 }
 
 /* One modal, one scroll surface: the supplied artwork and every transparent

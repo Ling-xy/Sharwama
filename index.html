@@ -112,7 +112,9 @@
           <label class="sound-slider settings-row">
             <span class="setting-icon music-icon" aria-hidden="true">♪</span>
             <span class="setting-name">Muzik Latar｜背景音乐</span>
-            <input id="musicVolume" type="range" min="0" max="35" value="12"><output id="musicValue">12%</output>
+            <span class="slider-rail-art" aria-hidden="true"></span>
+            <span class="slider-flower-art" aria-hidden="true"></span>
+            <input id="musicVolume" type="range" min="0" max="100" value="35" aria-label="Background music volume"><output id="musicValue">35%</output>
           </label>
           <label class="sound-row settings-row">
             <span class="setting-icon sfx-icon" aria-hidden="true">◖))</span>
@@ -121,7 +123,9 @@
           <label class="sound-slider settings-row">
             <span class="setting-icon level-icon" aria-hidden="true">▮▮▮</span>
             <span class="setting-name">Kelantangan Kesan Bunyi｜音效音量</span>
-            <input id="sfxVolume" type="range" min="0" max="100" value="65"><output id="sfxValue">65%</output>
+            <span class="slider-rail-art" aria-hidden="true"></span>
+            <span class="slider-flower-art" aria-hidden="true"></span>
+            <input id="sfxVolume" type="range" min="0" max="100" value="65" aria-label="Sound effects volume"><output id="sfxValue">65%</output>
           </label>
           <button id="testSfxButton" class="test-sfx-button" type="button"><span aria-hidden="true">◖))</span> Dengar Kesan Bunyi｜试听音效</button>
         </div>

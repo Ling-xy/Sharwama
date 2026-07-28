@@ -699,7 +699,7 @@ function refreshSliderPosition(slider) {
   const maximum = Number(slider.max) || 100;
   const value = Number(slider.value);
   const progress = Math.max(0, Math.min(100, ((value - minimum) / (maximum - minimum || 1)) * 100));
-  slider.style.setProperty("--slider-progress", `${progress}%`);
+  slider.closest(".sound-slider")?.style.setProperty("--slider-progress", `${progress}%`);
   slider.setAttribute("aria-valuetext", `${Math.round(value)}%`);
 }
 
@@ -707,7 +707,9 @@ function refreshSFXSettings() {
   sfxToggle.checked = sfxManager.enabled;
   sfxVolume.value = Math.round(sfxManager.volume * 100);
   sfxValue.textContent = `${sfxVolume.value}%`;
-  musicVolumeSlider.value = Math.round(musicVolume * 100);
+  // The settings artwork shows a full 0–100 scale while playback remains
+  // safely capped at the existing 35% maximum music level.
+  musicVolumeSlider.value = Math.round((musicVolume / 0.35) * 100);
   musicValue.textContent = `${musicVolumeSlider.value}%`;
   refreshSliderPosition(sfxVolume);
   refreshSliderPosition(musicVolumeSlider);
@@ -741,7 +743,7 @@ sfxVolume.oninput = () => {
   refreshSliderPosition(sfxVolume);
 };
 musicVolumeSlider.oninput = () => {
-  setMusicVolume(Number(musicVolumeSlider.value) / 100);
+  setMusicVolume((Number(musicVolumeSlider.value) / 100) * 0.35);
   musicValue.textContent = `${musicVolumeSlider.value}%`;
   refreshSliderPosition(musicVolumeSlider);
 };
